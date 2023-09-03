@@ -14,7 +14,7 @@ struct UrlRepositoryImpl: UrlRepository {
     
     func getAllCheckedUrls(callBack: @escaping ([UrlModel]) -> ()) {
         var urlModels = dbProvider.getAllData()
-        if let option = readSortOption() {
+        if let option = UserDefaultStore.shared.getSortOption() {
             urlModels.sortBy(option: option)
         }
         
@@ -50,7 +50,7 @@ struct UrlRepositoryImpl: UrlRepository {
         }
         
         group.notify(queue: .main) {
-            if let option = readSortOption() {
+            if let option = UserDefaultStore.shared.getSortOption() {
                 models.sortBy(option: option)
             }
             completion(models)

@@ -52,11 +52,9 @@ class ApiManager: ApiProvider {
         URLSession.shared.dataTask(with: urlRequest) { (data, response, error) in
             
             if let error = error {
-                print(error)
                 completion(.failure(.connectionError))
             } else if let responseCode = response as? HTTPURLResponse {
-                print(responseCode.statusCode)
-                print(responseCode)
+                
                 switch responseCode.statusCode {
                 case 200:
                     completion(.success(true))

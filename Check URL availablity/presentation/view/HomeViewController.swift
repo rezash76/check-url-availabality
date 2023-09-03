@@ -6,6 +6,7 @@
 //
 
 import UIKit
+import Toast
 
 class HomeViewController: UIViewController, loadingViewable {
     
@@ -64,8 +65,6 @@ class HomeViewController: UIViewController, loadingViewable {
     
     var urlModels = [UrlModel]() {
         didSet {
-            print(urlModels)
-            print(urlModels.count)
             urlTableView.reloadData()
         }
     }
@@ -112,7 +111,7 @@ class HomeViewController: UIViewController, loadingViewable {
             if let text {
                 let model = UrlModel(url: text, isAvailable: false, isChecking: true)
                 self.urlModels.append(model)
-                if let opton = readSortOption() {
+                if let opton = UserDefaultStore.shared.getSortOption() {
                     switch opton {
                     case .name(_):
                         self.urlModels.sortBy(option: opton)
@@ -157,13 +156,9 @@ class HomeViewController: UIViewController, loadingViewable {
             self.homeViewModel.sortBy(option: .checkingTime(isAscending: false))
         }))
         
-        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel, handler:{ (UIAlertAction) in
-            print("User click Dismiss button")
-        }))
+        alert.addAction(UIAlertAction(title: "Cancel", style: .cancel))
         
-        self.present(alert, animated: true, completion: {
-            print("completion block")
-        })
+        self.present(alert, animated: true)
     }
     
     func setupBindings() {
@@ -178,11 +173,6 @@ class HomeViewController: UIViewController, loadingViewable {
             guard let `self` = self else {return}
             urlModels = models
         }
-        
-        homeViewModel.onError = { [weak self] (homeError) in
-            guard let `self` = self else {return}
-        }
-        
     }
 }
 
@@ -215,7 +205,7 @@ extension HomeViewController {
         if editingStyle == .delete {
             let url = urlModels[indexPath.row]
             if url.isChecking {
-                view.addSubview(messageView)
+                self.view.makeToast("Pls wait untill the end of process.")
             } else {
                 self.urlModels.remove(at: indexPath.row)
                 self.homeViewModel.delete(url: url)

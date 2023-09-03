@@ -9,30 +9,19 @@ import Foundation
 
 class HomeViewModel {
     
-    public enum homeError {
-        case internetError(String)
-        case serverMessage(String)
-    }
-    
-    
-    
     private let repository: UrlRepository = UrlRepositoryImpl()
     private var urlModels = [UrlModel]()
     
     public var onUrlModels: (([UrlModel]) -> Void)?
     public var loading: ((Bool) -> Void)?
-    public var onError: ((homeError) -> Void)?
-    
     
     func addUrlToCheck(_ url: String) {
-//        self.loading?(true)
         repository.checkAvailablity(of: url) { model in
             DispatchQueue.main.async {
                 self.urlModels.append(model)
-                if let option = readSortOption() {
+                if let option = UserDefaultStore.shared.getSortOption() {
                     self.urlModels.sortBy(option: option)
                 }
-//                self.loading?(false)
                 self.onUrlModels?(self.urlModels)
             }
         }
@@ -61,33 +50,12 @@ class HomeViewModel {
     }
     
     func delete(url: UrlModel) {
-        if url.isChecking {
-//            onError?()
-        } else {
-            repository.delete(url: url)
-        }
-        
+        repository.delete(url: url)
     }
     
     func sortBy(option: SortOption) {
-        option.save()
+        UserDefaultStore.shared.setSortOption(option: option)
         urlModels.sortBy(option: option)
         onUrlModels?(urlModels)
-    }
-}
-
-
-
-
-
-func readSortOption() -> SortOption? {
-    let userDefaults = UserDefaults.standard
-    
-    if let rawDictionary = userDefaults.dictionary(forKey: "sortOption"),
-       let dictData = try? JSONSerialization.data(withJSONObject: rawDictionary)
-    {
-        return try? JSONDecoder().decode(SortOption.self, from: dictData)
-    } else {
-        return nil
     }
 }
