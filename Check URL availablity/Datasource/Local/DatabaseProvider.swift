@@ -23,7 +23,7 @@ class DatabaseManager: DataBaseProvider {
     }
     
     func delete(data: UrlModel) {
-        RealmManager.shared.delet(url: data)
+        RealmManager.shared.delete(url: data)
     }
     
 }

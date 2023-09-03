@@ -27,9 +27,11 @@ class RealmManager {
         }
     }
     
-    func delet(url: UrlModel) {
-        try! realm.write {
-            realm.delete(url)
+    func delete(url: UrlModel) {
+        if !url.isInvalidated {
+            try! realm.write {
+                realm.delete(url)
+            }
         }
     }
 }
