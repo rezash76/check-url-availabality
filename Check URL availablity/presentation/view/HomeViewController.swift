@@ -181,7 +181,6 @@ class HomeViewController: UIViewController, loadingViewable {
         
         homeViewModel.onError = { [weak self] (homeError) in
             guard let `self` = self else {return}
-            
         }
         
     }
