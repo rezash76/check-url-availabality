@@ -32,7 +32,7 @@ class ApiManager: ApiProvider {
     }
     
     func get(from url: String, completion: @escaping (Result<Bool, RequestError>) -> ()) {
-        let reguestStartTime = Date()
+        
         var url = url
         
         guard url.isValidURL else {
@@ -44,7 +44,8 @@ class ApiManager: ApiProvider {
             url = "https://" + url
         }
         
-        var urlRequest = URLRequest(url: URL(string: url)!, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 15)
+        
+        var urlRequest = URLRequest(url: URL(string: url)!, cachePolicy: .useProtocolCachePolicy, timeoutInterval: 10)
         
         urlRequest.httpMethod = method.get.rawValue
         

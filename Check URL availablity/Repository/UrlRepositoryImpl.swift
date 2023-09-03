@@ -91,15 +91,15 @@ struct UrlRepositoryImpl: UrlRepository {
         }
     }
     
-    func readSortOption() -> SortOption? {
-        let userDefaults = UserDefaults.standard
-        
-        if let rawDictionary = userDefaults.dictionary(forKey: "sortOption"),
-           let dictData = try? JSONSerialization.data(withJSONObject: rawDictionary)
-        {
-            return try? JSONDecoder().decode(SortOption.self, from: dictData)
-        } else {
-            return nil
-        }
-    }
+//    func readSortOption() -> SortOption? {
+//        let userDefaults = UserDefaults.standard
+//
+//        if let rawDictionary = userDefaults.dictionary(forKey: "sortOption"),
+//           let dictData = try? JSONSerialization.data(withJSONObject: rawDictionary)
+//        {
+//            return try? JSONDecoder().decode(SortOption.self, from: dictData)
+//        } else {
+//            return nil
+//        }
+//    }
 }

@@ -7,7 +7,7 @@
 
 import UIKit
 
-class HomeViewController: UIViewController {
+class HomeViewController: UIViewController, loadingViewable {
     
     lazy var messageView: UIView = {
         var view = UIView(frame: CGRect(x: 22, y: self.view.frame.size.width / 2, width: self.view.frame.size.width / 2, height: 40))
@@ -112,7 +112,15 @@ class HomeViewController: UIViewController {
             if let text {
                 let model = UrlModel(url: text, isAvailable: false, isChecking: true)
                 self.urlModels.append(model)
-                self.homeViewModel.checkAvailablity(of: text)
+                if let opton = readSortOption() {
+                    switch opton {
+                    case .name(_):
+                        self.urlModels.sortBy(option: opton)
+                    default:
+                        break
+                    }
+                }
+                self.homeViewModel.addUrlToCheck(text)
             }
         }
         )
@@ -162,7 +170,7 @@ class HomeViewController: UIViewController {
         
         homeViewModel.loading = { [weak self] (isLoading) in
             guard let `self` = self else {return}
-            print("Loading IS \(isLoading)")
+            isLoading ? self.startLoading() : self.stopLoading()
             
         }
         
