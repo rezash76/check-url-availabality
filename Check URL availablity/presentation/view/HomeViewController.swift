@@ -106,6 +106,7 @@ class HomeViewController: UIViewController, loadingViewable {
     @objc private func addURLTapped() {
         let ac = UIAlertController(title: "Type a Url to check availablity.", message: nil, preferredStyle: .alert)
         ac.addTextField()
+        ac.textFields?.first?.keyboardType = .URL
         ac.addAction(UIAlertAction(title: "Check", style: .default) { [unowned ac] _ in
             let text = ac.textFields?.first?.text
             if let text {
@@ -207,8 +208,8 @@ extension HomeViewController {
             if url.isChecking {
                 self.view.makeToast("Pls wait untill the end of process.")
             } else {
-                self.urlModels.remove(at: indexPath.row)
                 self.homeViewModel.delete(url: url)
+                self.urlModels.remove(at: indexPath.row)
             }
         }
     }
