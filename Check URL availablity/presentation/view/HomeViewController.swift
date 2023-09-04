@@ -10,25 +10,6 @@ import Toast
 
 class HomeViewController: UIViewController, loadingViewable {
     
-    lazy var messageView: UIView = {
-        var view = UIView(frame: CGRect(x: 22, y: self.view.frame.size.width / 2, width: self.view.frame.size.width / 2, height: 40))
-        view.translatesAutoresizingMaskIntoConstraints = false
-        view.backgroundColor = .gray.withAlphaComponent(0.5)
-        let label = UILabel()
-        label.translatesAutoresizingMaskIntoConstraints = false
-        label.textAlignment = .center
-        label.text = "You can not remove the URL while checking..."
-        view.addSubview(label)
-        NSLayoutConstraint.activate([
-            label.leadingAnchor.constraint(equalTo: view.leadingAnchor),
-            label.trailingAnchor.constraint(equalTo: view.trailingAnchor),
-            label.topAnchor.constraint(equalTo: view.topAnchor),
-            label.bottomAnchor.constraint(equalTo: view.bottomAnchor)
-        ])
-        
-        return view
-    }()
-    
     lazy var refreshBarButton: UIBarButtonItem = {
         var button = UIBarButtonItem(image: UIImage(systemName: "arrow.clockwise"), style: .plain, target: self, action: #selector(refreshTapped))
         return button
@@ -44,19 +25,29 @@ class HomeViewController: UIViewController, loadingViewable {
         return button
     }()
     
+    lazy var searchController: UISearchController = {
+        var controller = UISearchController()
+        controller.searchResultsUpdater = self
+        controller.searchBar.sizeToFit()
+        controller.searchBar.showsCancelButton = true
+        controller.searchBar.tintColor = .white
+        controller.searchBar.delegate = self
+        controller.searchBar.barTintColor = .black
+        controller.searchBar.searchTextField.textColor = .black
+        controller.searchBar.searchTextField.keyboardType = .URL
+        controller.searchBar.searchTextField.backgroundColor = .white
+        return controller
+    }()
+    
     lazy var urlTableView: UITableView = {
         let tableView = UITableView()
         tableView.translatesAutoresizingMaskIntoConstraints = false
         tableView.delegate = self
         tableView.dataSource = self
-        
         tableView.isEditing = false
-        
         tableView.allowsSelection = true
         tableView.separatorStyle = .singleLine
-        
         tableView.register(UrlTableViewCell.self, forCellReuseIdentifier: "urlCell")
-        
         return tableView
     }()
     
@@ -64,6 +55,12 @@ class HomeViewController: UIViewController, loadingViewable {
     // MARK: - Properties
     
     var urlModels = [UrlModel]() {
+        didSet {
+            urlTableView.reloadData()
+        }
+    }
+    
+    var searchResults = [UrlModel]() {
         didSet {
             urlTableView.reloadData()
         }
@@ -79,6 +76,8 @@ class HomeViewController: UIViewController, loadingViewable {
         navigationItem.title = "List of URLs"
         navigationItem.rightBarButtonItems = [refreshBarButton, addURLBarButton]
         navigationItem.leftBarButtonItem = sortBarButton
+        navigationItem.searchController = searchController
+        navigationItem.hidesSearchBarWhenScrolling = true
         addViews()
         setupConstraint()
         setupBindings()
@@ -167,16 +166,21 @@ class HomeViewController: UIViewController, loadingViewable {
         homeViewModel.loading = { [weak self] (isLoading) in
             guard let `self` = self else {return}
             isLoading ? self.startLoading() : self.stopLoading()
-            
         }
         
         homeViewModel.onUrlModels = { [weak self] (models) in
             guard let `self` = self else {return}
             urlModels = models
         }
+        
+        homeViewModel.onSearchedUrls = { [weak self] (models) in
+            guard let `self` = self else {return}
+            searchResults = models
+        }
     }
 }
 
+// MARK: - TableView Delegate and DataSource
 extension HomeViewController: UITableViewDataSource, UITableViewDelegate {
     
     func numberOfSections(in tableView: UITableView) -> Int {
@@ -184,15 +188,20 @@ extension HomeViewController: UITableViewDataSource, UITableViewDelegate {
     }
     
     func tableView(_ tableView: UITableView, numberOfRowsInSection section: Int) -> Int {
-        urlModels.count
+        searchController.isActive ? searchResults.count : urlModels.count
     }
     
     func tableView(_ tableView: UITableView, cellForRowAt indexPath: IndexPath) -> UITableViewCell {
         let cell = tableView.dequeueReusableCell(withIdentifier: "urlCell", for: indexPath) as! UrlTableViewCell
         
-        cell.urlModel = urlModels[indexPath.row]
+        let url = searchController.isActive ? searchResults[indexPath.row] : urlModels[indexPath.row]
+        cell.urlModel = url
         
         return cell
+    }
+    
+    func tableView(_ tableView: UITableView, didSelectRowAt indexPath: IndexPath) {
+        searchController.isActive = false
     }
 }
 
@@ -206,11 +215,22 @@ extension HomeViewController {
         if editingStyle == .delete {
             let url = urlModels[indexPath.row]
             if url.isChecking {
-                self.view.makeToast("Pls wait untill the end of process.")
+                self.view.makeToast("Please wait untill the end of process.")
             } else {
                 self.homeViewModel.delete(url: url)
                 self.urlModels.remove(at: indexPath.row)
             }
+        }
+    }
+}
+
+// MARK: - SearchBar Delegate and Search Results Updatings
+extension HomeViewController: UISearchBarDelegate, UISearchResultsUpdating {
+    func updateSearchResults(for searchController: UISearchController) {
+        let searchString = searchController.searchBar.text!
+        self.homeViewModel.filterResultsWith(searchingUrl: searchString)
+        if !self.searchController.isFirstResponder {
+            self.searchController.becomeFirstResponder()
         }
     }
 }

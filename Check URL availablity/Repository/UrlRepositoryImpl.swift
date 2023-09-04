@@ -85,6 +85,14 @@ struct UrlRepositoryImpl: UrlRepository {
         }
     }
     
+    func getSearchedUrls(with url: String) -> [UrlModel] {
+        var searchedUrls = self.dbProvider.getSearched(data: url)
+        if let option = UserDefaultStore.shared.getSortOption() {
+            searchedUrls.sortBy(option: option)
+        }
+        return searchedUrls
+    }
+    
     func delete(url: UrlModel) {
         DispatchQueue.main.async {
             self.dbProvider.delete(data: url)

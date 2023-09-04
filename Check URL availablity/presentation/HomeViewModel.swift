@@ -11,8 +11,10 @@ class HomeViewModel {
     
     private let repository: UrlRepository = UrlRepositoryImpl()
     private var urlModels = [UrlModel]()
+    private var searchResults = [UrlModel]()
     
     public var onUrlModels: (([UrlModel]) -> Void)?
+    public var onSearchedUrls: (([UrlModel]) -> Void)?
     public var loading: ((Bool) -> Void)?
     
     func addUrlToCheck(_ url: String) {
@@ -51,6 +53,13 @@ class HomeViewModel {
     
     func delete(url: UrlModel) {
         repository.delete(url: url)
+    }
+    
+    func filterResultsWith(searchingUrl url: String) {
+        let searchUrls = repository.getSearchedUrls(with: url)
+        searchResults.removeAll()
+        searchResults.append(contentsOf: searchUrls)
+        onSearchedUrls?(searchResults)
     }
     
     func sortBy(option: SortOption) {

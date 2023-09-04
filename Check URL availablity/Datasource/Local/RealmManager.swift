@@ -21,6 +21,11 @@ class RealmManager {
         realm.objects(UrlModel.self).toArray()
     }
     
+    func getFiltered(url: String) -> [UrlModel] {
+        let predicate = NSPredicate(format: "url BEGINSWITH [c]%@", url)
+        return realm.objects(UrlModel.self).filter(predicate).toArray()
+    }
+    
     func add(url: UrlModel) {
         try! realm.write {
             realm.add(url)
